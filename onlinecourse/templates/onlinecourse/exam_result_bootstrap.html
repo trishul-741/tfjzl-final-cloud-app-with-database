@@ -38,17 +38,49 @@
 <div class="container-fluid">
     {% if grade > 80 %}
     <div class="alert alert-success">
-       <!--HINT Display passed info -->
+       <h4 class="alert-heading">Congratulations, {{ user.first_name|default:user.username }}!</h4>
+       <p>You have passed the exam for {{ course.name }}.</p>
+       <p>Your score is {{ score }}/{{ total_score }} ({{ grade }}%).</p>
     </div>
         {% else %}
         <div class="alert alert-danger">
-            <!--HINT Display failed info -->
+            <h4 class="alert-heading">Exam not passed</h4>
+            <p>Your score is {{ score }}/{{ total_score }} ({{ grade }}%).</p>
+            <p>Please review the questions below and try again.</p>
         </div>
         <a class="btn btn-link text-danger" href="{% url 'onlinecourse:course_details' course.id %}">Re-test</a>
         {% endif %}
         <div class="card-columns-vertical mt-1">
         <h5 class="">Exam results</h5>
-            <!--HINT Display exam results-->
+            {% for result in question_results %}
+            <div class="card mt-3">
+                <div class="card-header">
+                    Question {{ forloop.counter }}: {{ result.question.question_text }}
+                </div>
+                <div class="card-body">
+                    <ul class="list-group">
+                        {% for choice in result.choices %}
+                        <li class="list-group-item {% if choice.is_correct %}list-group-item-success{% elif choice.id in result.selected_choice_ids %}list-group-item-danger{% endif %}">
+                            {{ choice.choice_text }}
+                            {% if choice.is_correct %}
+                            <span class="badge badge-success float-right">Correct answer</span>
+                            {% elif choice.id in result.selected_choice_ids %}
+                            <span class="badge badge-danger float-right">Your choice</span>
+                            {% endif %}
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    <p class="mt-3 mb-0">
+                        {% if result.is_correct %}
+                        <span class="text-success">Correct.</span>
+                        {% else %}
+                        <span class="text-danger">Incorrect.</span>
+                        {% endif %}
+                        Score: {{ result.earned_score }}/{{ result.question.grade }}
+                    </p>
+                </div>
+            </div>
+            {% endfor %}
         </div>
     </div>
 </body>
